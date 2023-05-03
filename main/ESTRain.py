@@ -1,17 +1,16 @@
 import random
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
+
 import wait
 import loginGui
 import data_proces
-import getdata
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QCommandLinkButton, QApplication
 import data_save
 import selen
 from PyQt5 import QtCore, QtGui, QtWidgets
 import qwidget
-from multiprocessing.dummy import Process
 import threading
 import logging
 import wifi
@@ -51,7 +50,11 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         self.data_data = []
         self.data = self.datasave.rjson.get("data").get("searchgui")
-        self.date = time.strptime(self.data.get('date'), "%Y-%m-%d")
+        try:
+            self.date = time.strptime(self.data.get('date'), "%Y-%m-%d")
+        except:
+            self.date = time.localtime()
+        # print(self.date)
         if self.date.tm_mday < time.localtime().tm_mday and self.date.tm_mon == time.localtime().tm_mon:
             self.date = time.localtime()
         # MainWindow.setObjectName("ESTrain")
@@ -334,7 +337,7 @@ class Ui_MainWindow(object):
             # 将按钮的objectName编号设置一下，方便后面辨认是哪个按钮
             self.new_btn.setObjectName(f"{button_setobjectname[i]}")
             if rowcount_list[i] == "抢票":
-                self.new_btn.setStyleSheet("color: red;font: 20px")
+                self.new_btn.setStyleSheet("color: red;font: 20px;")
             self.new_btn.clicked.connect(lambda: self.btn_college(self.new_btn.sender()))
             self.tableWidget.setCellWidget(i, 15, self.new_btn)
 
@@ -345,7 +348,14 @@ class Ui_MainWindow(object):
         self.data_data = []
         # 每爬取一行数据就传给data
         logging.info("开始爬取数据！")
-        for data in self.pa.pa_data():
+        pool = ThreadPoolExecutor(max_workers=10)
+        pools = []
+        for td in self.pa.tr:
+            # for data in self.pa.pa_data(self.pa.tr):
+            data_pool = pool.submit(self.pa.pa_data, td)
+            pools.append(data_pool)
+        for pool in pools:
+            data = pool.result()
             self.data_data.append(data)
             # 将传过来的data进行数据分析，显示
             # self.tableWidget.setCursor(Qt.ArrowCursor)
@@ -353,6 +363,7 @@ class Ui_MainWindow(object):
             # 更新表格数据，这个很重要，没有这个数据也不能一行一行的显示
             self.tableWidget.viewport().update()
             n = n + 1
+            time.sleep(0.2)
         # self.tableWidget.setCursor(Qt.ArrowCursor)
         logging.info("数据爬取完毕！！！")
 
