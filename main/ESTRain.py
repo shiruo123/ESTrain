@@ -4,14 +4,11 @@ import time
 import wait
 import loginGui
 import data_proces
-import getdata
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QCommandLinkButton, QApplication
 import data_save
 import selen
 from PyQt5 import QtCore, QtGui, QtWidgets
 import qwidget
-from multiprocessing.dummy import Process
 import threading
 import logging
 import wifi
@@ -51,7 +48,11 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         self.data_data = []
         self.data = self.datasave.rjson.get("data").get("searchgui")
-        self.date = time.strptime(self.data.get('date'), "%Y-%m-%d")
+        try:
+            self.date = time.strptime(self.data.get('date'), "%Y-%m-%d")
+        except:
+            self.date = time.localtime()
+        # print(self.date)
         if self.date.tm_mday < time.localtime().tm_mday and self.date.tm_mon == time.localtime().tm_mon:
             self.date = time.localtime()
         # MainWindow.setObjectName("ESTrain")
@@ -334,7 +335,7 @@ class Ui_MainWindow(object):
             # 将按钮的objectName编号设置一下，方便后面辨认是哪个按钮
             self.new_btn.setObjectName(f"{button_setobjectname[i]}")
             if rowcount_list[i] == "抢票":
-                self.new_btn.setStyleSheet("color: red;font: 20px")
+                self.new_btn.setStyleSheet("color: red;font: 20px;")
             self.new_btn.clicked.connect(lambda: self.btn_college(self.new_btn.sender()))
             self.tableWidget.setCellWidget(i, 15, self.new_btn)
 
