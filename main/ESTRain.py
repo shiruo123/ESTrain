@@ -1,8 +1,6 @@
 import random
 import sys
 import time
-from concurrent.futures import ThreadPoolExecutor
-
 import wait
 import loginGui
 import data_proces
@@ -348,14 +346,7 @@ class Ui_MainWindow(object):
         self.data_data = []
         # 每爬取一行数据就传给data
         logging.info("开始爬取数据！")
-        pool = ThreadPoolExecutor(max_workers=10)
-        pools = []
-        for td in self.pa.tr:
-            # for data in self.pa.pa_data(self.pa.tr):
-            data_pool = pool.submit(self.pa.pa_data, td)
-            pools.append(data_pool)
-        for pool in pools:
-            data = pool.result()
+        for data in self.pa.pa_data():
             self.data_data.append(data)
             # 将传过来的data进行数据分析，显示
             # self.tableWidget.setCursor(Qt.ArrowCursor)
@@ -363,7 +354,6 @@ class Ui_MainWindow(object):
             # 更新表格数据，这个很重要，没有这个数据也不能一行一行的显示
             self.tableWidget.viewport().update()
             n = n + 1
-            time.sleep(0.2)
         # self.tableWidget.setCursor(Qt.ArrowCursor)
         logging.info("数据爬取完毕！！！")
 
