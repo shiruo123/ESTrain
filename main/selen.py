@@ -1,9 +1,10 @@
-import multiprocessing
+import threading
 import random
 import time
 from queue import Queue
 import getdata
 import selenium
+import wait
 from selenium.common.exceptions import *
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -47,24 +48,17 @@ class paData(object):
         爬取一共有多少车次，即最后面的预约还是抢票
         :return:
         """
-        # pool = multiprocessing.Pool(5)
-        # q = Queue()
         if self.browser_is_input:
-            time.sleep(0.5)
-            tr_int, td_15_list = self.pa()
-            return tr_int, td_15_list
+            self.pa_wait = wait.Wait(text="请等待浏览器初始化", login_wait=True)
+            threading.Thread(target=self.while_wait).start()
+            self.pa_wait.wait_window.exec_()
+            # time.sleep(3)
+            # tr_int, td_15_list = self.pa()
+            # return tr_int, td_15_list
         logging.info("正在获取数据总数和有无票信息。")
         self.data_list = []
         self.data_list_b = []
         self.browser.find_element(By.XPATH, '//*[@id="query_ticket"]').click()
-        # thead_tr = self.browser.find_element(By.XPATH, '/html/body/div[2]/div[7]/div[8]/table/thead/tr')
-        # thead_list.append(thead_tr.find_element(By.XPATH, 'th[1]').text)
-        # thead_list.append(thead_tr.find_element(By.XPATH, 'th[2]').text)
-        # thead_list.append(thead_tr.find_element(By.XPATH, 'th[3]/span[1]').text + "\n" +thead_tr.find_element(By.XPATH, 'th[3]/span[2]').text)
-        # thead_list.append(thead_tr.find_element(By.XPATH, 'th[4]/span').text)
-        # for i in range(5, 17):
-        #     thead_list.append(thead_tr.find_element(By.XPATH, f'th[{i}]').text)
-        # print(thead_list)
         while True:
             try:
                 self.tr = self.browser.find_elements(By.XPATH, '//*[@id="queryLeftTable"]/tr')
@@ -80,6 +74,14 @@ class paData(object):
             except NoSuchElementException:
                 a.append("抢票")
         return len(self.tr), a
+
+    def while_wait(self):
+        while True:
+            if self.browser_is_input:
+                time.sleep(0.1)
+            else:
+                self.pa_wait.wait_window.close()
+                break
 
     def fromStationText(self, fromstation):
         self.browser.find_element(By.XPATH, '//*[@id="fromStationText"]').clear()
@@ -117,7 +119,7 @@ class paData(object):
                     text = "--"
                 else:
                     b.append(text.split("，")[-2] + text.split("，")[-1])
-                    c.append(i-2)
+                    c.append(i)
                     text = f'{text.split("，")[-2].split("票价")[-1]}\n{text.split("，")[-1]}'
                 a.append(text)
             logging.info(str(a) + "爬取成功")
@@ -129,7 +131,7 @@ class paData(object):
 
     def update_login(self, str_zw, str_ck, td_int, ck_cc_data):
         # print(str_ck)
-        # print(ck_cc_data)
+        print(ck_cc_data)
         for i in range(len(ck_cc_data[0])):
             # print(ck_cc_data[0][i], str_ck[0][1])
             if ck_cc_data[0][i] == str_ck[0][1]:
@@ -250,7 +252,7 @@ class paData(object):
             except:
                 logging.info("座位选择错误")
                 pass
-            self.browser.find_element(By.XPATH, '//*[@id="qr_submit_id"]').click()
+        self.browser.find_element(By.XPATH, '//*[@id="qr_submit_id"]').click()
 
 
 if __name__ == '__main__':

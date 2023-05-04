@@ -1,4 +1,3 @@
-import random
 import sys
 import time
 import wait
@@ -40,7 +39,7 @@ class Ui_MainWindow(object):
         # self.searchgui.MainWindow1.exec_()
         self.wifi = wifi.WIFI()
         # 动态过去wifi的情况，如果有wifi就退出，没有则过几秒检查一次
-        threading.Thread(target=self.wifi.wifi_update_time, args=(random.randint(0, 1), ), daemon=True).start()
+        threading.Thread(target=self.wifi.wifi_update_time, args=(0.2, ), daemon=True).start()
         # 用线程调用browser_pa,作用是提前打开浏览器并打开网址以便节省后面爬取的时间
         threading.Thread(target=self.wifi_panduan, daemon=True).start()
         # if self.wifi.ret is False:
@@ -137,6 +136,7 @@ class Ui_MainWindow(object):
         self.tableWidget.setObjectName("tableWidget")
 
     def __init_disposition(self):
+        threading.Thread(target=self.wifi_F, daemon=True).start()
         # 窗口初始最大化
         self.MainWindow.showMaximized()
         self.MainWindow.setWindowIcon(QtGui.QIcon(TU_BIAO_ICON_PATH))
@@ -144,7 +144,6 @@ class Ui_MainWindow(object):
         self.dateEdit.setDisplayFormat("yyyy-MM-dd")
         self.dateEdit.setCalendarPopup(True)
         self.completer.setFilterMode(Qt.MatchStartsWith)
-        threading.Thread(target=self.wifi_F, daemon=True).start()
         # 设置表格行大小
         self.tableWidget.horizontalHeader().setDefaultSectionSize(117)
         # 设置表头的颜色增加美观
@@ -418,7 +417,7 @@ class Ui_MainWindow(object):
                 # 上面那个浏览器抢票去了，重新创建一个浏览器
                 self.pa = selen.paData(chaxun_list=True)
                 # 将这个新的浏览器执行前面的搜索内容
-                self.wifi_panduan()
+                threading.Thread(target=self.pa.browser_pa, daemon=True).start()
         # 如果没有乘车人则说明乘客信息还在爬取当中
         else:
             # 判断登入页面是否按了确定按钮
@@ -429,13 +428,13 @@ class Ui_MainWindow(object):
                     button = self.wait_gui(self.logingui.button_event_text, True)
                 # 如果没有按确定按钮就提示其没有登入
                 else:
-                    button = self.wait_gui("未输入账号和密码！")
+                    button = self.wait_gui(wait_str="未输入账号和密码！", event_bool=True)
                 # 判断是否按了登入按钮，如果按了则显示登入窗口
                 if button:
                     self.__loginGui()
 
-    def wait_gui(self, wait_str, event_bool=False):
-        w = wait.Wait(wait_str, event_bool)
+    def wait_gui(self, wait_str, event_bool=False, *args, **kwargs):
+        w = wait.Wait(wait_str, event_bool, *args, **kwargs)
         w.wait_window.exec_()
         return w.button_T_F
 
@@ -458,24 +457,24 @@ class Ui_MainWindow(object):
             if self.wifi.wifi:
                 threading.Thread(target=self.pa.browser_pa, daemon=True).start()
                 break
-            time.sleep(0.5)
+            time.sleep(0.2)
 
     def login_wifi_panduan(self):
         while True:
-            # print(self.wifi.wifi)
             if self.wifi.wifi:
                 self.logging_pa = threading.Thread(target=self.logingui.init_login, daemon=True)
                 self.logging_pa.start()
                 break
-            time.sleep(0.5)
+            time.sleep(0.2)
 
     def wifi_F(self):
         while True:
             if self.wifi.wifi:
                 self.label_2.setText("")
+                break
             else:
                 self.label_2.setText("温馨提示：您还没有连接网络，请连接网络后在使用！！！")
-            time.sleep(0.5)
+            time.sleep(0.2)
 
 
 if __name__ == '__main__':
