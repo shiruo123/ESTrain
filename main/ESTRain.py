@@ -15,6 +15,7 @@ import ctypes
 from setting import *
 import subprocess
 import bide
+from concurrent.futures import ThreadPoolExecutor
 
 
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("myappid")
@@ -25,6 +26,7 @@ place_name_list = open("../PlaceName.txt", "r", encoding="utf-8").read().split("
 class Ui_MainWindow(object):
     def __init__(self):
         # 调用data_save类,以便后面的出发地、目的地、账号、密码、如期的保存
+        self.pool = ThreadPoolExecutor(max_workers=POOL_NUMBER)
         self.chrome_count = []
         self.data_list = 0
         self.wifi = False
@@ -122,7 +124,7 @@ class Ui_MainWindow(object):
         self.dateEdit.setGeometry(DATE_EDIT_SIZE)
         self.button.setGeometry(BUTTON_SIZE)
         self.tableWidget.setGeometry(TABLEWIDGET_SIZE)
-        self.button_1.setGeometry(QtCore.QRect(1770, 10, 150, 60))
+        self.button_1.setGeometry(BUTTON_SIZE_1)
 
     def __init_set_objectname_text(self):
         self.centralwidget.setObjectName("centralwidget")
@@ -148,6 +150,7 @@ class Ui_MainWindow(object):
         self.tableWidget.horizontalHeader().setDefaultSectionSize(117)
         # 设置表头的颜色增加美观
         self.tableWidget.horizontalHeader().setStyleSheet("QHeaderView::section{background:lightblue;}")
+        self.tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.button_1.setStyleSheet("font: 25px;color: blue")
         self.button_1.setFlat(True)
         self.button_1.setCursor(QtGui.QCursor(Qt.PointingHandCursor))
@@ -345,7 +348,12 @@ class Ui_MainWindow(object):
         self.data_data = []
         # 每爬取一行数据就传给data
         logging.info("开始爬取数据！")
-        for data in self.pa.pa_data():
+        pa_data_pools = []
+        for td in self.pa.tr:
+            pool_data = self.pool.submit(self.pa.pa_data, td)
+            pa_data_pools.append(pool_data)
+        for data_pro in pa_data_pools:
+            data = data_pro.result()
             self.data_data.append(data)
             # 将传过来的data进行数据分析，显示
             # self.tableWidget.setCursor(Qt.ArrowCursor)
@@ -353,6 +361,7 @@ class Ui_MainWindow(object):
             # 更新表格数据，这个很重要，没有这个数据也不能一行一行的显示
             self.tableWidget.viewport().update()
             n = n + 1
+            time.sleep(0.25)
         # self.tableWidget.setCursor(Qt.ArrowCursor)
         logging.info("数据爬取完毕！！！")
 

@@ -128,19 +128,19 @@ class LoginQdialog(object):
             self.browser.minimize_window()
             self.wait = selenium.webdriver.support.ui.WebDriverWait(self.browser, 3)
             self.browser.get("https://kyfw.12306.cn/otn/resources/login.html")
-            self.browser.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/div[1]/div[1]/div[1]/input').send_keys(self.lineEdit.text())
-            self.browser.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/div[1]/div[1]/div[2]/input').send_keys(self.lineEdit_2.text())
-            self.browser.find_element(By.XPATH, '/html/body/div[1]/div[2]/div[2]/div[1]/div[1]/div[4]/a').click()
+            self.browser.find_element(By.XPATH, '//*[@id="J-userName"]').send_keys(self.lineEdit.text())
+            self.browser.find_element(By.XPATH, '//*[@id="J-password"]').send_keys(self.lineEdit_2.text())
+            self.browser.find_element(By.XPATH, '//*[@id="J-login"]').click()
             time.sleep(2)
             script = 'Object.defineProperty(navigator,"webdriver",{get:()=>undefined,});'
             self.browser.execute_script(script)
             while True:
                 try:
                     # 获取滑块位置
-                    span = self.browser.find_element(By.XPATH, '/html/body/div[1]/div[4]/div[2]/div[2]/div/div/div[2]/div/div[1]/span')
+                    span = self.browser.find_element(By.XPATH, '//*[@id="nc_1_n1z"]')
                 except NoSuchElementException:
                     # 如果没有找到滑块的位置，就点击左上角的滑块验证进行使其出现滑块
-                    self.browser.find_element(By.XPATH, '/html/body/div[1]/div[4]/div[2]/ul/li[1]/a').click()
+                    self.browser.find_element(By.XPATH, '//*[@id="verification"]/li[1]/a').click()
                     continue
                 try:
                     action = webdriver.ActionChains(self.browser)
@@ -164,10 +164,10 @@ class LoginQdialog(object):
                     pass
                 try:
                     # 点击乘车人，使其加载乘车人信息
-                    self.wait.until(expected_conditions.element_to_be_clickable((By.XPATH, '/html/body/div[2]/div[2]/div[2]/ul/li[6]/ul/li[1]/a'))).click()
+                    self.wait.until(expected_conditions.element_to_be_clickable((By.XPATH, '//*[@id="cylianxiren"]/a'))).click()
                 except:
                     try:
-                        self.wait.until(expected_conditions.element_to_be_clickable((By.XPATH, '/html/body/div[2]/div[2]/div[2]/ul/li[6]/ul/li[1]/a'))).click()
+                        self.wait.until(expected_conditions.element_to_be_clickable((By.XPATH, '//*[@id="cylianxiren"]/a'))).click()
                     except:
                         self.button_event_text = (self.browser.find_element(By.XPATH, '//*[@id="J-login-error"]/span').text.split("。")[0])
                         self.browser.close()
@@ -180,7 +180,7 @@ class LoginQdialog(object):
         # self.browser.find_element(By.XPATH, "/html/body/div[6]/div[2]/div[2]/div[2]/a").click()
         # self.browser.find_element(By.XPATH, '/html/body/div[2]/div[2]/div[2]/ul/li[6]/ul/li[1]/a').click()
         # 以下为乘车人信息爬取
-        tbody = self.wait.until(expected_conditions.element_to_be_clickable((By.XPATH, '/html/body/div[2]/div[2]/div[2]/div/div[2]/div/div[2]/div/div[2]/table/tbody')))
+        tbody = self.wait.until(expected_conditions.element_to_be_clickable((By.XPATH, '//*[@id="content_list"]/div/div[2]/table/tbody')))
         for tr in tbody.find_elements(By.XPATH, "tr"):
             td_list = []
             for td in range(2, 6):

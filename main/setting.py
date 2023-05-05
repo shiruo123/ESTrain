@@ -10,6 +10,7 @@ LINEEDIT_SIZE_1 = QRect(500, 20, 200, 40)
 DATE_EDIT_SIZE = QRect(750, 20, 200, 40)
 BUTTON_SIZE = QRect(1000, 20, 100, 40)
 TABLEWIDGET_SIZE = QRect(0, 80, 1920, 930)
+BUTTON_SIZE_1 = QRect(1770, 10, 150, 60)
 
 # 抢票刷新页面秒数1, 3表示1~3秒
 ESTRAIN_UPDATA_TIME_MIN = 1
@@ -20,3 +21,5 @@ TU_BIAO_ICON_PATH = "../images/main.ico"
 
 # 浏览器位置
 CHROME_PATH = "../Google/Chrome/Application/chrome.exe"
+
+POOL_NUMBER = 3

@@ -98,36 +98,35 @@ class paData(object):
         self.browser.find_element(By.XPATH, '//*[@id="train_date"]').clear()
         self.browser.find_element(By.XPATH, '//*[@id="train_date"]').send_keys(date)
 
-    def pa_data(self):
-        for td in self.tr:
-            a = []
-            b = []
-            c = []
-            a.append(td.find_element(By.XPATH, 'td[1]/div/div[1]/div/a').text)
-            a.append(td.find_element(By.XPATH, 'td[1]/div/div[2]/strong[1]').text + "\n" + td.find_element(By.XPATH,
-                                                                                                           'td[1]/div/div[2]/strong[2]').text)
-            a.append(td.find_element(By.XPATH, 'td[1]/div/div[3]/strong[1]').text + "\n" + td.find_element(By.XPATH,
-                                                                                                           'td[1]/div/div[3]/strong[2]').text)
-            try:
-                a.append(td.find_element(By.XPATH, 'td[1]/div/div[4]/strong').text + "\n" + td.find_element(By.XPATH,
-                                                                                                            'td[1]/div/div[4]/span').text)
-            except:
-                yield [["--", "--", "--", "--", "--", "--", "--", "--", "--", "--", "--", "--", "--", "--", "--"], []]
-            for i in range(2, 13):
-                text = td.find_element(By.XPATH, f'td[{i}]').get_attribute("aria-label")
-                if text is None:
-                    text = "--"
-                else:
-                    b.append(text.split("，")[-2] + text.split("，")[-1])
-                    c.append(i)
-                    text = f'{text.split("，")[-2].split("票价")[-1]}\n{text.split("，")[-1]}'
-                a.append(text)
-            logging.info(str(a) + "爬取成功")
-            # print(a)
-            # print(b)
-            yield [a, b, c]
-            # self.data_list.append(a)
-            # self.data_list_b.append(b)
+    def pa_data(self, td):
+        a = []
+        b = []
+        c = []
+        a.append(td.find_element(By.XPATH, 'td[1]/div/div[1]/div/a').text)
+        a.append(td.find_element(By.XPATH, 'td[1]/div/div[2]/strong[1]').text + "\n" + td.find_element(By.XPATH,
+                                                                                                       'td[1]/div/div[2]/strong[2]').text)
+        a.append(td.find_element(By.XPATH, 'td[1]/div/div[3]/strong[1]').text + "\n" + td.find_element(By.XPATH,
+                                                                                                       'td[1]/div/div[3]/strong[2]').text)
+        try:
+            a.append(td.find_element(By.XPATH, 'td[1]/div/div[4]/strong').text + "\n" + td.find_element(By.XPATH,
+                                                                                                        'td[1]/div/div[4]/span').text)
+        except:
+            return [["--", "--", "--", "--", "--", "--", "--", "--", "--", "--", "--", "--", "--", "--", "--"], []]
+        for i in range(2, 13):
+            text = td.find_element(By.XPATH, f'td[{i}]').get_attribute("aria-label")
+            if text is None:
+                text = "--"
+            else:
+                b.append(text.split("，")[-2] + text.split("，")[-1])
+                c.append(i)
+                text = f'{text.split("，")[-2].split("票价")[-1]}\n{text.split("，")[-1]}'
+            a.append(text)
+        logging.info(str(a) + "爬取成功")
+        # print(a)
+        # print(b)
+        return [a, b, c]
+        # self.data_list.append(a)
+        # self.data_list_b.append(b)
 
     def update_login(self, str_zw, str_ck, td_int, ck_cc_data):
         # print(str_ck)
@@ -186,8 +185,7 @@ class paData(object):
             except:
                 pass
             try:
-                wait.until(expected_conditions.element_to_be_clickable(
-                    (By.XPATH, '//*[@id="nc_1_refresh1"]'))).click()
+                wait.until(expected_conditions.element_to_be_clickable((By.XPATH, '//*[@id="nc_1_refresh1"]'))).click()
                 continue
             except:
                 pass
@@ -253,6 +251,14 @@ class paData(object):
                 logging.info("座位选择错误")
                 pass
         self.browser.find_element(By.XPATH, '//*[@id="qr_submit_id"]').click()
+        while True:
+            try:
+                yes_chepiao = self.browser.find_element(By.XPATH, '//*[@id="main_content"]/div[1]/div/h3/span')
+                break
+            except:
+                time.sleep(1)
+        content = yes_chepiao.text
+        print(content)
 
 
 if __name__ == '__main__':
