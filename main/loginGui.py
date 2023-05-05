@@ -164,11 +164,9 @@ class LoginQdialog(object):
                     pass
                 try:
                     # 点击乘车人，使其加载乘车人信息
-                    self.wait.until(expected_conditions.element_to_be_clickable((By.XPATH, '//*[@id="cylianxiren"]/a'))).click()
+                    self.wait.until(expected_conditions.element_to_be_clickable((By.XPATH, '//*[@id="cylianxiren"]/a')))
+                    self.browser.get('https://kyfw.12306.cn/otn/view/passengers.html')
                 except:
-                    try:
-                        self.wait.until(expected_conditions.element_to_be_clickable((By.XPATH, '//*[@id="cylianxiren"]/a'))).click()
-                    except:
                         self.button_event_text = (self.browser.find_element(By.XPATH, '//*[@id="J-login-error"]/span').text.split("。")[0])
                         self.browser.close()
                         self.button_close_T_F = False
@@ -177,6 +175,7 @@ class LoginQdialog(object):
         except:
             self.button_close_T_F = False
             return
+        time.sleep(2)
         # self.browser.find_element(By.XPATH, "/html/body/div[6]/div[2]/div[2]/div[2]/a").click()
         # self.browser.find_element(By.XPATH, '/html/body/div[2]/div[2]/div[2]/ul/li[6]/ul/li[1]/a').click()
         # 以下为乘车人信息爬取

@@ -52,6 +52,8 @@ class paData(object):
             self.pa_wait = wait.Wait(text="请等待浏览器初始化", login_wait=True)
             threading.Thread(target=self.while_wait).start()
             self.pa_wait.wait_window.exec_()
+            if self.browser_is_input:
+                self.pa()
             # time.sleep(3)
             # tr_int, td_15_list = self.pa()
             # return tr_int, td_15_list
