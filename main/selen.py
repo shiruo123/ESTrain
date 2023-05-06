@@ -14,6 +14,7 @@ from selenium.webdriver.support import ui, expected_conditions
 from selenium.webdriver.common.action_chains import ActionChains
 import logging
 from setting import *
+import SendEmail
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s: %(message)s")
 
@@ -23,8 +24,16 @@ class paData(object):
         self.browser_is_input = True
         self.chaxun_list = chaxun_list
 
-    def browser_pa(self):
-        departure_destination_date = getdata.rfp().get("data").get("searchgui").copy()
+    def browser_pa(self, *args, **kwargs):
+        if kwargs:
+            departure = kwargs.get("departure")
+            destination = kwargs.get("destination")
+            date = kwargs.get("date")
+        else:
+            departure_destination_date = getdata.rfp().get("data").get("searchgui").copy()
+            departure = departure_destination_date.get("departure")
+            destination = departure_destination_date.get("destination")
+            date = departure_destination_date.get("date")
         option = webdriver.ChromeOptions()
         # option.add_argument('headless')
         # option.add_argument('blink-settings=imagesEnabled=false')
@@ -34,11 +43,11 @@ class paData(object):
         self.browser.minimize_window()
         self.browser.get("https://kyfw.12306.cn/otn/leftTicket/init")
         # 出发地输入
-        self.fromStationText(departure_destination_date.get("departure"))
+        self.fromStationText(departure)
         # 目的地输入
-        self.toStationText(departure_destination_date.get("destination"))
+        self.toStationText(destination)
         # 日期输入
-        self.date_icon_1(departure_destination_date.get("date"))
+        self.date_icon_1(date)
         self.browser_is_input = False
         if self.chaxun_list:
             self.pa()
@@ -123,7 +132,6 @@ class paData(object):
                 c.append(i)
                 text = f'{text.split("，")[-2].split("票价")[-1]}\n{text.split("，")[-1]}'
             a.append(text)
-        logging.info(str(a) + "爬取成功")
         # print(a)
         # print(b)
         return [a, b, c]
@@ -131,8 +139,14 @@ class paData(object):
         # self.data_list_b.append(b)
 
     def update_login(self, str_zw, str_ck, td_int, ck_cc_data):
-        # print(str_ck)
-        print(ck_cc_data)
+        """
+        传入信息，开始抢票或者买票
+        :param str_zw: 座位号，如果是火车无需座位号则等于G
+        :param str_ck: 乘客信息[['成人票', '硬座票价9元剩有', '乘客姓名']]
+        :param td_int: 第几个车次
+        :param ck_cc_data: 车票信息及车票信息序号[['软卧票价81.5元剩3', '硬卧票价55元剩有', '硬座票价9元剩有'], [6, 8, 10]]
+        :return:
+        """
         for i in range(len(ck_cc_data[0])):
             # print(ck_cc_data[0][i], str_ck[0][1])
             if ck_cc_data[0][i] == str_ck[0][1]:
@@ -140,7 +154,7 @@ class paData(object):
         while True:
             try:
                 # print(ck_cc_data[1][i])
-                a = self.browser.find_element(By.XPATH, f'//*[@id="queryLeftTable"]/tr[{td_int * 2 + 1}]/td[{ck_cc_data[1][i]}]').text
+                a = self.browser.find_element(By.XPATH, f'//*[@id="queryLeftTable"]/tr[{td_int * 2 + 1}]/td[{td_int}]').text
                 # print(a)
                 if a != "候补" and a != "无":
                     break

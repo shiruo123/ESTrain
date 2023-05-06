@@ -354,6 +354,7 @@ class Ui_MainWindow(object):
             pa_data_pools.append(pool_data)
         for data_pro in pa_data_pools:
             data = data_pro.result()
+            logging.info(str(data)+"爬取成功")
             self.data_data.append(data)
             # 将传过来的data进行数据分析，显示
             # self.tableWidget.setCursor(Qt.ArrowCursor)
