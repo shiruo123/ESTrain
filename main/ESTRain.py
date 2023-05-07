@@ -25,7 +25,6 @@ place_name_list = open("../PlaceName.txt", "r", encoding="utf-8").read().split("
 
 class Ui_MainWindow(object):
     def __init__(self):
-        # 调用data_save类,以便后面的出发地、目的地、账号、密码、如期的保存
         self.pool = ThreadPoolExecutor(max_workers=POOL_NUMBER)
         self.chrome_count = []
         self.data_list = 0
@@ -33,6 +32,7 @@ class Ui_MainWindow(object):
         self.che_list = []
         self.data_15_1 = []
         self.now_date_M_D = [time.localtime().tm_mday, time.localtime().tm_mon]
+        # 调用data_save类,以便后面的出发地、目的地、账号、密码、如期的保存v
         self.datasave = data_save.DataSave()
         # 调用sele类爬取车次数据的类
         self.pa = selen.paData()
@@ -54,8 +54,6 @@ class Ui_MainWindow(object):
         except:
             self.date = time.localtime()
         # print(self.date)
-        if self.date.tm_mday < time.localtime().tm_mday and self.date.tm_mon == time.localtime().tm_mon:
-            self.date = time.localtime()
         # MainWindow.setObjectName("ESTrain")
         self.MainWindow = MainWindow
         self.__init_pyqt()
@@ -77,7 +75,6 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(self.MainWindow)
         self.__loginGui()
         self.__login_state()
-        threading.Thread(target=self.pa.date_icon_1, args=(self.dateEdit.text(), ), daemon=True).start()
 
     def __init_pyqt(self):
         self.centralwidget = QtWidgets.QWidget(self.MainWindow)

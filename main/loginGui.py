@@ -119,7 +119,7 @@ class LoginQdialog(object):
             return
         try:
             option = webdriver.ChromeOptions()
-            # option.add_argument('headless')
+            option.add_argument('headless')
             # option.add_argument("--window-size=1920,1050")
             # option.add_argument('blink-settings=imagesEnabled=false')
             option.add_experimental_option('excludeSwitches', ['enable-automation'])
@@ -162,6 +162,7 @@ class LoginQdialog(object):
                     return
                 except:
                     pass
+                logging.info("登入成功")
                 try:
                     # 点击乘车人，使其加载乘车人信息
                     self.wait.until(expected_conditions.element_to_be_clickable((By.XPATH, '//*[@id="cylianxiren"]/a')))

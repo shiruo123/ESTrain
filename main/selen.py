@@ -275,6 +275,8 @@ class paData(object):
                 time.sleep(1)
         content = yes_chepiao.text
         print(content)
+        email_message = SendEmail.mail("1500536201@qq.com", content)
+        logging.info(email_message)
 
 
 if __name__ == '__main__':

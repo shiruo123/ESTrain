@@ -19,10 +19,14 @@ tr, len_tr = browser.pa()
 datas = []
 for td in browser.tr:
     data_list = browser.pa_data(td)
+    data_list_0_len = len(data_list[0])
     data = []
-    for i in range(len(data_list[0])):
+    data.extend(data_list[0][i] for i in range(4))
+    n = 0
+    for i in range(4, data_list_0_len):
         if data_list[0][i] != "--":
-            data.append(data_list[0][i])
+            data.append(data_list[1][n])
+            n += 1
     print(data)
     datas.append(data)
 
