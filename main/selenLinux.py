@@ -15,12 +15,14 @@ from selenium.webdriver.common.action_chains import ActionChains
 import logging
 from setting import *
 import SendEmail
+import mysql
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s: %(message)s")
 
 
 class paData(object):
     def __init__(self):
+        self.get_mysql = mysql.MysqlGetData()
         self.td_int = 0
         self.str_ck = None
         self.tr = None
@@ -28,7 +30,7 @@ class paData(object):
 
     def browser_pa(self, departure, destination, date, **kwargs):
         option = webdriver.ChromeOptions()
-        option.add_argument('headless')
+        # option.add_argument('headless')
         # option.add_argument('blink-settings=imagesEnabled=false')
         option.add_experimental_option('excludeSwitches', ['enable-automation'])
         option.binary_location = CHROME_PATH
@@ -89,7 +91,7 @@ class paData(object):
         # self.data_list.append(a)
         # self.data_list_b.append(b)
 
-    def update_login(self, ck_cc_data, i):
+    def update_login(self, ID, train_name):
         """
         传入信息，开始抢票或者买票
         :param str_zw: 座位号，如果是火车无需座位号则等于G
@@ -98,6 +100,8 @@ class paData(object):
         :param ck_cc_data: 车票信息及车票信息序号[['软卧票价81.5元剩3', '硬卧票价55元剩有', '硬座票价9元剩有'], [6, 8, 10]]
         :return:
         """
+        ck_cc_data, i = self.get_mysql.get_train_data(ID)
+        ck_cc_data = eval(ck_cc_data)
         text = self.browser.find_element(By.XPATH, f'//*[@id="queryLeftTable"]/tr[{self.td_int * 2 + 1}]/td[1]/div/div/div/a').text
         logging.info(f"当前车次{text},已选择{ck_cc_data[0][i].split('票价')[0]},车票剩余{ck_cc_data[0][i].split('剩')[-1]}")
         while True:
@@ -106,7 +110,16 @@ class paData(object):
                 a = self.browser.find_element(By.XPATH, f'//*[@id="queryLeftTable"]/tr[{self.td_int * 2 + 1}]/td[{ck_cc_data[1][i]}]').text
                 # print(a)
                 if a != "候补" and a != "无":
-                    break
+                    new_train_name = self.browser.find_element(By.XPATH, f'//*[@id="queryLeftTable"]/tr[{self.td_int * 2 + 1}]/td[1]/div/div[1]/div/a')
+                    if new_train_name == train_name:
+                        break
+                    else:
+                        for i, td in enumerate(self.tr):
+                            txt = td.find_element(By.XPATH, 'td[1]/div/div[1]/div/a').text
+                            if txt == train_name:
+                                self.td_int = i
+                                self.update_login(ID, train_name)
+                                break
             except NoSuchElementException or NoSuchWindowException:
                 pass
             try:

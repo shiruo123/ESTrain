@@ -3,6 +3,7 @@ import data_proces
 from selenium.webdriver.common.by import By
 import mysql
 import selenLinux
+import threading
 
 WHILE_TIME = 3
 
@@ -15,58 +16,85 @@ class Server(object):
 
     def start(self):
         # while True:
-        self.all_data()
+        all_data_generator = self.all_data()
+        while True:
+            try:
+                all_ids = next(all_data_generator)
+                pa_data = StartPaData(*all_ids)
+                thread = threading.Thread(target=pa_data.selen_pa)
+                thread.start()
+            except StopIteration:
+                break
         # self.while_time()
         # self.selen_pa()
 
     def all_data(self):
         all_datas_IDs = self.get_mysql.get_all_data()
         all_datas_ID = set(all_datas_IDs)
-        print(all_datas_ID)
         for data_ID in all_datas_ID:
-            account_data = self.get_mysql.get_select_data("user.ID, station.ID", "user, station, train", f"train.ID={data_ID[0]}")[0]
-            user_data = self.get_mysql.get_select_data("user_name.ID, login_data.ID", "train, user_name, login_data",
-                                                   f"train.ID=user_name.TrainID and user_name.ID=login_data.UserNameID and train.ID={data_ID[0]}")
+            account_data = self.get_mysql.get_user_station_id(data_ID)
+            user_data = self.get_mysql.get_username_logindata_id(data_ID)
             selen_state = self.get_mysql.get_train(data_ID, "State")
+            print(selen_state, account_data, user_data)
             if selen_state == "static":
-                self.selen_pa(account_data, user_data, data_ID[0])
+                yield account_data[0], user_data, data_ID[0]
+            else:
+                continue
 
-    def selen_pa(self, user_id, login_ids, train_id):
-        self.update_mysql.update_train_state(train_id, "static", "active")
-        login_data = self.get_mysql.get_station(user_id[1])
-        pa = selenLinux.paData()
-        pa.browser_pa(*login_data)
-        train = self.train(train_id)
-        pa.td_int, td = self.is_td_pa_data(train, pa.tr)
-        data = pa.pa_data(td)
+
+class StartPaData(mysql.Mysql):
+    def __init__(self, user_id, login_ids, train_id):
+        super(StartPaData, self).__init__()
+        self.get_mysql = mysql.MysqlGetData()
+        self.update_mysql = mysql.MysqlUpdateDate()
+        self.set_mysql = mysql.MysqlSetData()
+        self.train_id = None
+        self.train = None
+        self.user_id = user_id
+        self.login_ids = login_ids
+        self.train_id = train_id
+        self.pa = None
+
+    def selen_pa(self):
+        self.update_mysql.update_train_state(self.train_id, "active")
+        self.train = self.train_name()
+        login_data = self.get_mysql.get_station(self.user_id[1])
+        self.pa = selenLinux.paData()
+        self.pa.browser_pa(*login_data)
+        print(self.train)
+        self.pa.td_int, td = self.is_td_pa_data(self.pa.tr)
+        data = self.pa.pa_data(td)
         data = data_proces.data_heard_process_1(data)
-        pa.str_ck = self.user_name(login_ids)
-        self.update_login(pa, data)
-        self.login(pa, user_id[0])
-        pa.user_name()
-        pa.piao_data()
-        self.seat(pa, login_ids)
-        pa.selection_seat()
-        text = pa.user_email_send()
+        self.pa.str_ck = self.user_name(self.login_ids)
+        self.update_login(data)
+        self.pa.update_login(self.train_id, self.train)
+        self.login(self.user_id[0])
+        self.pa.user_name()
+        self.pa.piao_data()
+        self.seat(self.login_ids)
+        self.pa.selection_seat()
+        text = self.pa.user_email_send()
         if text.split("，")[0] == "席位已锁定":
-            self.update_mysql.update_train_state(train_id, "active", "finish")
+            self.update_mysql.update_train_state(self.train_id, "finish")
         else:
-            self.update_mysql.update_train_state(train_id, "active", "static")
+            self.update_mysql.update_train_state(self.train_id, "static")
 
-    def train(self, ID):
-        train = self.get_mysql.get_train(ID)
-        return train[0]
+    def train_name(self):
+        train = self.get_mysql.get_train(self.train_id)
+        return train
 
-    def update_login(self, pa, ck_cc_data):
+    def update_login(self, ck_cc_data):
         for i in range(len(ck_cc_data[0])):
-            if ck_cc_data[0][i] == pa.str_ck[0][1]:
-                pa.update_login(ck_cc_data, i)
-                self.set_mysql.set_train_data(ck_cc_data[0], i)
+            if ck_cc_data[0][i].split("票价")[0] == self.pa.str_ck[0][1]:
+                self.set_mysql.set_train_data(self.train_id, ck_cc_data, i)
+                self.update_mysql.update_train_data_station_data(self.train_id, ck_cc_data)
                 break
+        else:
+            self.error(self.train_id, f"{self.train}:没有{self.pa.str_ck[0][1]}这个座位。")
 
-    def login(self, pa, ID):
+    def login(self, ID):
         datas = self.get_mysql.get_user(ID)
-        pa.login(*datas)
+        self.pa.login(*datas)
 
     def user_name(self, IDs):
         str_ck = []
@@ -74,23 +102,27 @@ class Server(object):
         for ID in IDs:
             datas = self.get_mysql.get_user_name(ID[0])
             str_ck.append(list(datas))
-        for i in range(len(str_ck)):
-            str_ck[i][1] = str_ck[i][1].split("票价")[0]
         return str_ck
 
-    def seat(self, pa, IDs):
+    def seat(self, IDs):
         seats = []
         for ID in IDs:
             seat = self.get_mysql.get_seat(ID[1])[0]
             seats.append(seat)
-        pa.str_zw = seats
+        self.pa.str_zw = seats
 
-    @staticmethod
-    def is_td_pa_data(text, tr):
+    def is_td_pa_data(self, tr):
         for i, td in enumerate(tr):
             txt = td.find_element(By.XPATH, 'td[1]/div/div[1]/div/a').text
-            if txt == text:
+            if txt == self.train:
                 return i, td
+        else:
+            self.error(self.train_id, f"未知的车票:{self.train}。请确认当前地址和时间是否有此车票。")
+
+    def error(self, train_id, text):
+        self.update_mysql.update_train_error(train_id, text)
+        self.update_mysql.update_train_state(train_id, "static")
+        exit()
 
     def while_time(self):
         time.sleep(WHILE_TIME)

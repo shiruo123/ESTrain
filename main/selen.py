@@ -148,13 +148,14 @@ class paData(object):
         :return:
         """
         for i in range(len(ck_cc_data[0])):
-            # print(ck_cc_data[0][i], str_ck[0][1])
             if ck_cc_data[0][i] == str_ck[0][1]:
                 break
+        text = self.browser.find_element(By.XPATH, f'//*[@id="queryLeftTable"]/tr[{td_int * 2 + 1}]/td[1]/div/div/div/a').text
+        logging.info(f"当前车次{text},已选择{ck_cc_data[0][i].split('票价')[0]},车票剩余{ck_cc_data[0][i].split('剩')[-1]}")
         while True:
             try:
                 # print(ck_cc_data[1][i])
-                a = self.browser.find_element(By.XPATH, f'//*[@id="queryLeftTable"]/tr[{td_int * 2 + 1}]/td[{td_int}]').text
+                a = self.browser.find_element(By.XPATH, f'//*[@id="queryLeftTable"]/tr[{td_int * 2 + 1}]/td[{ck_cc_data[1][i]}]').text
                 # print(a)
                 if a != "候补" and a != "无":
                     break
@@ -168,6 +169,13 @@ class paData(object):
         self.login(str_zw, str_ck, td_int)
 
     def login(self, str_zw, str_ck, td_int):
+        """
+        开始买票
+        :param str_zw: 座位号，如果是火车无需座位号则等于G
+        :param str_ck: 乘客信息[['成人票', '硬座票价9元剩有', '乘客姓名']]
+        :param td_int: 第几个车次
+        :return:
+        """
         # print(str_zw, str_ck, td_int)
         login_data = getdata.rfp()
         username = login_data.get("data").get("logingui").get("account")
@@ -266,17 +274,18 @@ class paData(object):
             except:
                 logging.info("座位选择错误")
                 pass
-        self.browser.find_element(By.XPATH, '//*[@id="qr_submit_id"]').click()
-        while True:
-            try:
-                yes_chepiao = self.browser.find_element(By.XPATH, '//*[@id="main_content"]/div[1]/div/h3/span')
-                break
-            except:
-                time.sleep(1)
-        content = yes_chepiao.text
-        print(content)
-        email_message = SendEmail.mail("1500536201@qq.com", content)
-        logging.info(email_message)
+        # self.browser.find_element(By.XPATH, '//*[@id="qr_submit_id"]').click()
+        # while True:
+        #     try:
+        #         yes_chepiao = self.browser.find_element(By.XPATH, '//*[@id="main_content"]/div[1]/div/h3/span')
+        #         break
+        #     except:
+        #         time.sleep(1)
+        # content = yes_chepiao.text
+        # print(content)
+        # user_name_list = [name[2] for name in str_ck]
+        # email_message = SendEmail.mail("1500536201@qq.com", content, user_name_list)
+        # logging.info(email_message)
 
 
 if __name__ == '__main__':

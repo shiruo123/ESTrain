@@ -6,6 +6,9 @@
 # # # File : qt34_MenuTest.py
 # # # @software: PyCharm
 # #
+import threading
+import time
+
 from selenium import webdriver
 # import sys
 #
@@ -110,5 +113,31 @@ from selenium import webdriver
 #                     a.click()
 #                     continue
 
-if 0 and 1 or 0 and 1:
-    print(1)
+
+def a(text):
+    if text == 1:
+        # print(1.0)
+        exit()
+    time.sleep(3)
+    # print(2.0)
+
+
+def b(text):
+    print(1.1)
+    a(text)
+    print(2.1)
+
+
+# threading.Thread(target=b, args=(1, )).start()
+# threading.Thread(target=b, args=(3, )).start()
+# threading.Thread(target=b, args=(4, )).start()
+a_1 = (1, 2, 3, )
+b_1 = [2, 3]
+b_1.extend(a_1)
+print(b_1)
+for i in range(3):
+    print(i)
+
+a_2 = [1, ]
+if len(a_2):
+    print(1234)

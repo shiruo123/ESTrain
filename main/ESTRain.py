@@ -419,6 +419,7 @@ class Ui_MainWindow(object):
             if len(qw.zw) > 0:
                 # print(sender.text())
                 # 开始购票或者抢票
+                # print(qw.zw, qw.ck, int(sender.objectName()), self.piao_money)
                 threading.Thread(target=self.pa.update_login, args=(qw.zw, qw.ck, int(sender.objectName()), self.piao_money), daemon=True).start()
                 # threading.Thread(target=self.pa.login, args=(qw.zw, qw.ck, int(sender.objectName())), daemon=True).start()
                 # 上面那个浏览器抢票去了，重新创建一个浏览器
