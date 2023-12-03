@@ -27,6 +27,7 @@ class paData(object):
         self.str_ck = None
         self.tr = None
         self.str_zw = ["G"]
+        self.start_time = time.time()
 
     def browser_pa(self, departure, destination, date, **kwargs):
         option = webdriver.ChromeOptions()
@@ -110,16 +111,18 @@ class paData(object):
                 a = self.browser.find_element(By.XPATH, f'//*[@id="queryLeftTable"]/tr[{self.td_int * 2 + 1}]/td[{ck_cc_data[1][i]}]').text
                 # print(a)
                 if a != "候补" and a != "无":
-                    new_train_name = self.browser.find_element(By.XPATH, f'//*[@id="queryLeftTable"]/tr[{self.td_int * 2 + 1}]/td[1]/div/div[1]/div/a')
+                    new_train_name = self.browser.find_element(By.XPATH, f'//*[@id="queryLeftTable"]/tr[{self.td_int * 2 + 1}]/td[1]/div/div[1]/div/a').text
+                    print(new_train_name, train_name)
                     if new_train_name == train_name:
                         break
                     else:
                         for i, td in enumerate(self.tr):
                             txt = td.find_element(By.XPATH, 'td[1]/div/div[1]/div/a').text
                             if txt == train_name:
+                                break
+                            else:
                                 self.td_int = i
                                 self.update_login(ID, train_name)
-                                break
             except NoSuchElementException or NoSuchWindowException:
                 pass
             try:
@@ -127,6 +130,7 @@ class paData(object):
             except:
                 continue
             time.sleep(random.randint(ESTRAIN_UPDATA_TIME_MIN, ESTRAIN_UPDATA_TIME_MAX))
+
 
     def login(self, user_account, password, user_email):
         self.user_email = user_email
@@ -202,7 +206,7 @@ class paData(object):
 
     def selection_seat(self):
         if self.str_zw[0] == "G":
-            time.sleep(2)
+            time.sleep(5)
             self.browser.find_element(By.XPATH, '//*[@id="qr_submit_id"]').click()
             return
         time.sleep(5)

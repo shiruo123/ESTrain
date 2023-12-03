@@ -1,11 +1,14 @@
+import logging
 import time
 import data_proces
 from selenium.webdriver.common.by import By
 import mysql
 import selenLinux
-import threading
+from concurrent.futures import ThreadPoolExecutor
 
 WHILE_TIME = 3
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s: %(message)s")
 
 
 class Server(object):
@@ -15,31 +18,35 @@ class Server(object):
         self.set_mysql = mysql.MysqlSetData()
 
     def start(self):
-        # while True:
-        all_data_generator = self.all_data()
         while True:
-            try:
-                all_ids = next(all_data_generator)
-                pa_data = StartPaData(*all_ids)
-                thread = threading.Thread(target=pa_data.selen_pa)
-                thread.start()
-            except StopIteration:
-                break
-        # self.while_time()
+            all_data_generator = self.all_data()
+            pool = ThreadPoolExecutor(20)
+            while True:
+                try:
+                    all_ids = next(all_data_generator)
+                    logging.info(all_ids)
+                    pa_data = StartPaData(*all_ids)
+                    pool.submit(pa_data.selen_pa)
+                except StopIteration:
+                    break
+            self.while_time()
         # self.selen_pa()
 
     def all_data(self):
         all_datas_IDs = self.get_mysql.get_all_data()
-        all_datas_ID = set(all_datas_IDs)
-        for data_ID in all_datas_ID:
+        logging.info(all_datas_IDs)
+        for data_ID in all_datas_IDs:
             account_data = self.get_mysql.get_user_station_id(data_ID)
             user_data = self.get_mysql.get_username_logindata_id(data_ID)
             selen_state = self.get_mysql.get_train(data_ID, "State")
             print(selen_state, account_data, user_data)
-            if selen_state == "static":
+            if selen_state[0] == "static":
                 yield account_data[0], user_data, data_ID[0]
             else:
                 continue
+    @staticmethod
+    def while_time():
+        time.sleep(WHILE_TIME)
 
 
 class StartPaData(mysql.Mysql):
@@ -80,7 +87,7 @@ class StartPaData(mysql.Mysql):
             self.update_mysql.update_train_state(self.train_id, "static")
 
     def train_name(self):
-        train = self.get_mysql.get_train(self.train_id)
+        train = self.get_mysql.get_train(self.train_id)[0]
         return train
 
     def update_login(self, ck_cc_data):
@@ -123,9 +130,6 @@ class StartPaData(mysql.Mysql):
         self.update_mysql.update_train_error(train_id, text)
         self.update_mysql.update_train_state(train_id, "static")
         exit()
-
-    def while_time(self):
-        time.sleep(WHILE_TIME)
 
 
 if __name__ == '__main__':

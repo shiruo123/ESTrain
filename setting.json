@@ -1,13 +1,13 @@
 {
     "data": {
         "logingui": {
-            "account": "18897941661",
-            "password": "dsq171007"
+            "account": "1111",
+            "password": "123456"
         },
         "searchgui": {
-            "departure": "萍乡北",
-            "destination": "醴陵东",
-            "date": "2023-05-07"
+            "departure": "醴陵东",
+            "destination": "南昌西",
+            "date": "2023-12-04"
         }
     }
 }

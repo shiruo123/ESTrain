@@ -3,7 +3,7 @@ import pymysql
 
 class Mysql(object):
     def __init__(self):
-        host = '119.91.198.219'
+        host = '119.29.244.36'
         user = 'youthrefuel'
         password = 'dsq171007'
         database = 'estrain'
@@ -233,9 +233,9 @@ class MysqlGetData(Mysql):
         return self.get_select_data(return_text, tables, where)
 
     def get_all_data(self, *args):
-        all_text = "train.ID"
+        all_text = "DISTINCT train.ID"
         all_from = "user_name, user, login_data, train, station"
-        all_where = "station.UserID=user.ID and train.StationID=station.ID and train.ID=user_name.TrainID and user_name.ID=login_data.UserNameID"
+        all_where = "station.UserID=user.ID and train.StationID=station.ID and train.ID=user_name.TrainID and user_name.ID=login_data.UserNameID and State='static'"
         if len(args):
             all_where = all_where + " and %s" % args[0]
         all_data = self.get_select_data(all_text, all_from, all_where)
@@ -299,8 +299,9 @@ if __name__ == '__main__':
     # print(get_mysql.get_train(1, "State"))
     # print(get_mysql.get_seat(26))
     # print(get_mysql.get_train_data(4))
-    for data in get_mysql.get_datas():
-        print(data)
+    # for data in get_mysql.get_datas():
+    #     print(data)
+    print(get_mysql.get_all_data())
 
     delete_mysql = MysqlDeleteData()
     # delete_mysql.delete_user()

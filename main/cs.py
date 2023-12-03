@@ -1,143 +1,78 @@
-# # # -*- coding:utf-8 -*-
-# # # Time : 2019/08/18 下午 4:42
-# # # Author : 御承扬
-# # # e-mail:2923616405@qq.com
-# # # project:  PyQt5
-# # # File : qt34_MenuTest.py
-# # # @software: PyCharm
-# #
-import threading
-import time
-
-from selenium import webdriver
-# import sys
-#
-# from PyQt5 import QtWidgets
-# from PyQt5.QtCore import *
-# from PyQt5.QtGui import *
-# from PyQt5.QtWidgets import *
-# import getdata
-#
-# print(getdata.rfp().get("data").get("searchgui").copy().get("date"))
-#
-#
-# class MenuDemo(QMainWindow):
-#     def __init__(self, parent=None):
-#         super(MenuDemo, self).__init__(parent)
-#         self.setWindowTitle("Menu 示例")
-#         self.setWindowIcon(QIcon("./images/Python2.ico"))
-#         self.setFixedSize(1000, 1000)
-#         self.lineedit = QtWidgets.QLineEdit(self)
-#         self.lineedit.setGeometry(QRect(100, 100, 100, 50))
-#         self.lineedit.textChanged.connect(lambda: self.text_print(self.lineedit.text()))
-#         # self.lineedit.editingFinished.connect(lambda: self.text_print(self.lineedit.text()))
-#         self.lineedit1 = QtWidgets.QLineEdit(self)
-#         self.lineedit1.setGeometry(QRect(100, 200, 100, 50))
-#         # self.lineedit1.selectionChanged.connect(lambda: self.text_print(self.lineedit1.selectedText()))
-#         self.button = QtWidgets.QPushButton(self)
-#         self.button.setGeometry(QRect(200, 100, 100, 50))
-#         print(self.button.geometry().getRect())
-#         self.button.setText("确定")
-#         self.dateEdit = QtWidgets.QDateEdit(self)
-#         self.dateEdit.setGeometry(QRect(750, 100, 200, 40))
-#         self.dateEdit.setCalendarPopup(True)
-#         self.dateEdit.setObjectName("dateEdit")
-#         self.dateEdit.setDate(QDate(2023, 4, 25))
-#         self.dateEdit.dateChanged.connect(lambda: self.text_print(self.dateEdit.text()))
-#         bar = self.menuBar()
-#         # self.setWindowFlags(Qt.FramelessWindowHint)  # 隐藏主窗口边界
-#         bar.setWindowIcon(QIcon("../images/main.ico"))
-#         # self.lay.setSpacing(0)  # 去除控件间的距离
-#         # self.lay.setContentsMargins(0, 0, 0, 0)
-#         file = bar.addMenu("File")
-#         file.addAction("New")
-#         save = QAction("Save", self)
-#         save.setShortcut("Ctrl+S")
-#         file.addAction(save)
-#         edit = file.addMenu("Edit")
-#         edit.addAction("copy")
-#         edit.addAction("paste")
-#         quit = QAction("Quit", self)
-#         file.addAction(quit)
-#         file.triggered[QAction].connect(self.processTrigger)
-#
-#     def text_print(self, text):
-#         text = text.replace("/", "-")
-#         if len(text) == 0:
-#             print("空")
-#         print(text)
-#
-#     @staticmethod
-#     def processTrigger(q):
-#         print(q.text() + " is triggered")
-#
-#
-# if __name__ == "__main__":
-#     app = QApplication(sys.argv)
-#     win = MenuDemo()
-#     win.show()
-#     sys.exit(app.exec_())
-# # a = int("a")
-# # a = None
-# # if a:
-# #     print(1)
-#
-# a = ["1", "2"]
-# b = a[3]
-# from selenium.webdriver.common.by import By
-#
-#
-# browser = webdriver.Chrome()
-# browser.get("https://www.12306.cn/index/")
-# browser.find_element(By.XPATH, '//*[@id="fromStationText"]').click()
-# with open("PlaceName.txt", "a", encoding="utf-8") as fp:
-#     for i in range(2, 7):
-#         browser.find_element(By.XPATH, f'//*[@id="nav_list{i}"]').click()
-#         flip = browser.find_element(By.XPATH, f'//*[@id="flip_cities2"]')
-#         while True:
-#             uls = browser.find_elements(By.XPATH, f'//*[@id="ul_list{i}"]/ul')
-#             for ul in uls:
-#                 lis = ul.find_elements(By.XPATH, 'li')
-#                 for li in lis:
-#                     # try:
-#                     li_text = li.get_attribute("title")
-#                     if len(li_text) != 0:
-#                         fp.write(li_text+"\n")
-#                     # except:
-#                     #     pass
-#             a_s = flip.find_elements(By.XPATH, 'a')
-#             if len(a_s) == 1 and a_s[0].text == "« 上一页":
-#                 break
-#             for a in a_s:
-#                 if a.text == "下一页 »":
-#                     a.click()
-#                     continue
+import requests
+from lxml import etree
+import pymysql
 
 
-def a(text):
-    if text == 1:
-        # print(1.0)
-        exit()
-    time.sleep(3)
-    # print(2.0)
+def save(table, data):
+    try:
+        print(f"insert into {table} values {tuple(data)};")
+        cursor.execute(f"insert into {table} values {tuple(data)};")
+        db.commit()
+    except:
+        print("失败")
 
 
-def b(text):
-    print(1.1)
-    a(text)
-    print(2.1)
+db = pymysql.connect(host="119.29.244.36", user="youthrefuel", password="dsq171007", port=3306, database="bysj")
+cursor = db.cursor()
+
+url = "http://cooco.net.cn/zuowen/516098.html"
+response = requests.get(url)
+
+tree = etree.HTML(response.text)
+a = []
+c = []
+s = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+ps = tree.xpath("//p")
+ps.pop(0)
+ps = [i.text for i in ps]
+# print(ps)
+for p in ps:
+    if p[0] in s:
+        if len(a) != 0:
+            c.append(a)
+        a = []
+        p = p.split(".")[-1]
+    a.append(p)
+
+s = 0
+g = 0
+for k, i in enumerate(c):
+    if len(i) == 5:
+        continue
+        s += 1
+        t = ""
+        for x, j in enumerate(i):
+            # print(j[-5:-1])
+            if j[-5:-1] == "正确答案":
+                i[x] = i[x][0:-6]
+                t += i[x][0]
+        i.append(t)
+        i.insert(0, s)
+        # print(i)
+        save('app1_TiKu_xzt', i)
+    if len(i) == 4:
+        s += 1
+        for x, j in enumerate(i):
+            # print(j[-5:-1])
+            if j[-5:-1] == "正确答案":
+                i[x] = i[x][0:-6]
+                i.append(i[x][0])
+        i.insert(0, s)
+        if len(i) == 6:
+            # continue
+            g += 1
+            i.pop(0)
+            i.insert(0, g)
+            save('app1_TiKu_xzt1', i)
+        elif len(i) == 5:
+            continue
+            g += 1
+            i.pop(0)
+            i.insert(0, g)
+            i[-1] = i[-1].split("：")[-1]
+            save("app1_TiKu_pdt", i)
 
 
-# threading.Thread(target=b, args=(1, )).start()
-# threading.Thread(target=b, args=(3, )).start()
-# threading.Thread(target=b, args=(4, )).start()
-a_1 = (1, 2, 3, )
-b_1 = [2, 3]
-b_1.extend(a_1)
-print(b_1)
-for i in range(3):
-    print(i)
 
-a_2 = [1, ]
-if len(a_2):
-    print(1234)
+
+

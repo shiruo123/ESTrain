@@ -16,14 +16,20 @@ def mail(user_email, text, user_name_list):
         server.sendmail(my_sender, my_user, msg.as_string())  # 括号中对应的是发件人邮箱账号、收件人邮箱账号、发送邮件
         server.quit()  # 关闭连接
     except smtplib.SMTPDataError:
+        print(f"乘客{str(user_name_list)}的票:收件人可能包含不存在的帐户，请检查收件人地址")
         return f"乘客{str(user_name_list)}的票:收件人可能包含不存在的帐户，请检查收件人地址"
     except smtplib.SMTPRecipientsRefused:
+        print(f"乘客{str(user_name_list)}的票:错误的地址合成")
         return f"乘客{str(user_name_list)}的票:错误的地址合成"
     except Exception as e:
+        print(e)
         return e
     else:
+        print(f"乘客{str(user_name_list)}的票:购票(抢票)成功，请在规定时间缴费")
         return f"乘客{str(user_name_list)}的票:购票(抢票)成功，请在规定时间缴费"
 
 
-# mail("2576210620@qq.com", "22222")
+if __name__ == '__main__':
+
+    mail("2576210620@qq.com", "22222", "1111")
 

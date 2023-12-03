@@ -274,7 +274,7 @@ class paData(object):
             except:
                 logging.info("座位选择错误")
                 pass
-        # self.browser.find_element(By.XPATH, '//*[@id="qr_submit_id"]').click()
+        self.browser.find_element(By.XPATH, '//*[@id="qr_submit_id"]').click()
         # while True:
         #     try:
         #         yes_chepiao = self.browser.find_element(By.XPATH, '//*[@id="main_content"]/div[1]/div/h3/span')

@@ -11,3 +11,7 @@ def no_xipin():
         y = random.randint(-200, 200)
         pyautogui.moveRel(x, y)
         time.sleep(270)  # 让鼠标移动到某个位置，停留几秒钟
+
+
+if __name__ == '__main__':
+    no_xipin()
