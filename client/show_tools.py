@@ -46,7 +46,8 @@ class ShowTools(QtWidgets.QMainWindow):
         # 设置表格不可编辑
         # self.table_widget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.table_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.table_widget.cellChanged['int', 'int'].connect(self.cell_data_update)
+        # self.table_widget.itemClicked.connect(self.cell_data_update)
+        self.table_widget.itemChanged.connect(self.cell_data_update)
         self.table_widget.setColumnCount(14)
         for i in range(14):
             item = QtWidgets.QTableWidgetItem()
@@ -64,7 +65,15 @@ class ShowTools(QtWidgets.QMainWindow):
         threading.Thread(target=self.update_data, daemon=True).start()
 
     def cell_data_update(self, Item=None):
-        print(self.table_widget.cell)
+        # 如果单元格对象为空
+        if Item is None:
+            return
+        else:
+            row = Item.row()  # 获取行数
+            col = Item.column()  # 获取列数 注意是column而不是col哦
+            text = Item.text()  # 获取内容
+            # self.mysql.update()
+
 
     def main_menubar(self):
         menu_file = self.menubar.addMenu("文件")
@@ -114,7 +123,7 @@ class ShowTools(QtWidgets.QMainWindow):
             self.is_data_show = True
 
     def train_ids(self):
-        train_ids = sorted(list(set(self.mysql.get_all_data())))
+        train_ids = self.mysql.get_all_data()
         logging.info(train_ids)
         return train_ids
 
@@ -227,7 +236,7 @@ class ShowTools(QtWidgets.QMainWindow):
     def update_data(self):
         # 监听数据库
         mysql_connect = {
-            "host": "119.91.198.219",
+            "host": "119.29.244.36",
             "port": 3306,
             "user": "youthrefuel",
             "passwd": "dsq171007"
@@ -255,6 +264,7 @@ class ShowTools(QtWidgets.QMainWindow):
                 if isinstance(event, DeleteRowsEvent):
                     data["action"] = "DELETE"  # 记录操作类型
                     data["data"] = row['values']  # 添加数据
+                    self.__delete(data)
                 elif isinstance(event, UpdateRowsEvent):
                     data['action'] = "UPDATE"
                     data['data'] = row['after_values']
@@ -263,6 +273,10 @@ class ShowTools(QtWidgets.QMainWindow):
                     data['action'] = "INSERT"
                     data['data'] = row['values']
                     threading.Thread(target=self.__write, args=(data,)).start()
+
+    def __delete(self, data):
+        if data.get("table") == "train":
+            pass
 
     def __update(self, data):
         if data.get("table") == "train":
